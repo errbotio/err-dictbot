@@ -14,6 +14,6 @@ class DictBot(BotPlugin):
         args = args.strip()
         conn = Connection('dict.org')
         english = Database(conn, 'english')
-        definitions = self.define(args)
+        definitions = english.define(args)
         return '\n\n'.join([definition.getword() + ': ' + definition.getdefstr() for definition in definitions])
 
