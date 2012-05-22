@@ -14,6 +14,6 @@ class DictBot(BotPlugin):
         if not args:
             return 'You need at least a word as parameter.'
         args = args.strip()
-        definitions = english.define(args)
+        definitions = self.english.define(args)
         return '\n\n'.join([definition.getword() + ': ' + definition.getdefstr() for definition in definitions])
 
