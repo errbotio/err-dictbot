@@ -1,0 +1,6 @@
+[Core]
+Name = DictBot
+Module = dictBot
+
+[Documentation]
+Description = What does this word means ?
