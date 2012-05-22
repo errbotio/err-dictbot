@@ -3,8 +3,6 @@ from jabberbot import botcmd
 from dictclient import Database, Connection
 
 class DictBot(BotPlugin):
-    conn = Connection('dict.org')
-    english = Database(conn, 'english')
     @botcmd
     def define(self, mess, args):
         """ Query dict.org for a definition
@@ -14,6 +12,8 @@ class DictBot(BotPlugin):
         if not args:
             return 'You need at least a word as parameter.'
         args = args.strip()
-        definitions = self.english.define(args)
+        conn = Connection('dict.org')
+        english = Database(conn, 'english')
+        definitions = self.define(args)
         return '\n\n'.join([definition.getword() + ': ' + definition.getdefstr() for definition in definitions])
 
