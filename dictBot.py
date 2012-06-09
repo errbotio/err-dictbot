@@ -41,13 +41,13 @@ class DictBot(BotPlugin):
             style_name = style.get('name', '') if style else None
             style_description = style.get('description', None) if style else None
             if choosen_label:
-                self.send(mess.getFrom(), choosen_label)
+                self.send(mess.getFrom(), choosen_label, message_type=mess.getType())
             if name:
                 shortdesc = name + '\n' + '-' * len(name) + '\n' + description
-                self.send(mess.getFrom(), shortdesc)
+                self.send(mess.getFrom(), shortdesc, message_type=mess.getType())
             if style_name:
                 styledesc = style_name + '\n' + '-' * len(style_name) + '\n' + style_description
-                self.send(mess.getFrom(), styledesc)
+                self.send(mess.getFrom(), styledesc, message_type=mess.getType())
         return '/me is looking for your beer'
 
 
