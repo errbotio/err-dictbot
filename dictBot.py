@@ -24,6 +24,9 @@ class DictBot(BotPlugin):
 
     @botcmd
     def beer(self, mess, args):
+        args = args.strip()
+        if not args:
+            return 'What beer do you want me to search for ?'
         content = urlopen(self.BREWERY_DB_URL_SEARCH + '&q=' + quote(args.strip()) + '&type=beer' )
         results = simplejson.load(content)
         for beer_data in results.get('data', []):
