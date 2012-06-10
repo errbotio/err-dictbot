@@ -1,8 +1,12 @@
-from urllib2 import urlopen, quote
+from time import sleep
+from urllib2 import urlopen, quote, Request
 import simplejson
 from errbot.botplugin import BotPlugin
 from errbot.jabberbot import botcmd
 from dictclient import Database, Connection
+
+GOOGLE_WEB_URL = ('https://ajax.googleapis.com/ajax/services/search/web?' +
+                'v=1.0&q=%s')
 
 class DictBot(BotPlugin):
     @botcmd
@@ -43,13 +47,36 @@ class DictBot(BotPlugin):
             if choosen_label:
                 self.send(mess.getFrom(), choosen_label, message_type=mess.getType())
             if name:
-                shortdesc = name + '\n' + '-' * len(name) + '\n' + description
+                shortdesc = name + '\n' + description
                 self.send(mess.getFrom(), shortdesc, message_type=mess.getType())
-            if style_name:
-                styledesc = style_name + '\n' + '-' * len(style_name) + '\n' + style_description
-                self.send(mess.getFrom(), styledesc, message_type=mess.getType())
+            #if style_name:
+            #    styledesc = style_name + '\n' + '-' * len(style_name) + '\n' + style_description
+            #    self.send(mess.getFrom(), styledesc, message_type=mess.getType())
         return '/me is looking for your beer'
 
+    def get_estimated_count(self, query):
+        request = Request(GOOGLE_WEB_URL % quote(query), None, {'Referer': 'http://www.gootz.net/'})
+        response = urlopen(request)
+        results = simplejson.load(response)
+        return int(results['responseData']['cursor']['estimatedResultCount'])
 
+    @botcmd
+    def battle(self, mess, args):
+        """ Shows you who wins between the two
+        Example: !battle toto vs titi
+        """
+        SYNTAX = 'To start a google battle write a query like !battle toto vs titi'
+        if not args or args.find(' vs ')== -1:
+            return SYNTAX
+        args = args.split(' vs ')
+        left = args[0].strip()
+        right = args[1].strip()
+        if not left or not right:
+            return SYNTAX
+        left_result = self.get_estimated_count(left)
+        self.send(mess.getFrom(), 'On the left "%s" gets %i points .... and on the right ... ' %(left, left_result), message_type=mess.getType())
+        right_result = self.get_estimated_count(right)
+        sleep(5)
+        return '"%s" gets %i points!\nthe WINNER IS *** %s *** !!' %(right, right_result, left if left_result>right_result else right)
 
 
