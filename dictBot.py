@@ -28,6 +28,9 @@ class DictBot(BotPlugin):
 
     @botcmd
     def beer(self, mess, args):
+        """
+        Find back a beer from the Brewery DB
+        """
         args = args.strip()
         if not args:
             return 'What beer do you want me to search for ?'
