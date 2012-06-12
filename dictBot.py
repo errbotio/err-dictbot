@@ -21,6 +21,8 @@ class DictBot(BotPlugin):
         conn = Connection('dict.org')
         english = Database(conn, 'english')
         definitions = english.define(args)
+        if not definitions:
+            return 'Sorry I cannot find any definition for "%s"' % args
         return '\n\n'.join([definition.getword() + ': ' + definition.getdefstr() for definition in definitions])
 
     BREWERY_DB_TOKEN = 'e4a10b897c8cf67f6dc01d02dd769284'
