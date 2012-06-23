@@ -1,0 +1,6 @@
+[Core]
+Name = BeerBot
+Module = beerBot
+
+[Documentation]
+Description = Find me this beer !
