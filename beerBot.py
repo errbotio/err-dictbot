@@ -12,7 +12,6 @@ class BeerBot(BotPlugin):
 
     def configure(self, configuration):
         if configuration:
-            logging.info('config type %s' % type(configuration))
             if type(configuration) != dict:
                 super(BeerBot, self).configure(None)
                 raise Exception('Wrong configuration type')
