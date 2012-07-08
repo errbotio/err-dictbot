@@ -13,14 +13,14 @@ class BeerBot(BotPlugin):
     def configure(self, configuration):
         if configuration:
             if type(configuration) != dict:
-                super(BeerBot, self).configure(None)
                 raise Exception('Wrong configuration type')
 
             if not configuration.has_key('BREWERY_DB_TOKEN'):
-                super(BeerBot, self).configure(None)
                 raise Exception('Wrong configuration type, it should contain BREWERY_DB_TOKEN')
+
             if len(configuration) > 1:
                 raise Exception('What else did you try to insert in my config ?')
+
         super(BeerBot, self).configure(configuration)
 
     BREWERY_DB_URL_SEARCH = 'http://api.brewerydb.com/v2/search?key=%s'
