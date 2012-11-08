@@ -1,7 +1,6 @@
-import logging
 from urllib2 import urlopen, quote
-import simplejson
 # Backward compatibility
+import json
 from errbot.version import VERSION
 from errbot.utils import version2array
 if version2array(VERSION) >= [1,6,0]:
@@ -47,7 +46,7 @@ class BeerBot(BotPlugin):
             return 'Invalid configuration'
 
         content = urlopen(self.BREWERY_DB_URL_SEARCH%token + '&q=' + quote(args.strip()) + '&type=beer' )
-        results = simplejson.load(content)
+        results = json.load(content)
         for beer_data in results.get('data', []):
             name = beer_data.get('name', None)
             description = beer_data.get('description', '')

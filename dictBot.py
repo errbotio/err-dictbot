@@ -1,6 +1,6 @@
 from time import sleep
 from urllib2 import urlopen, quote, Request
-import simplejson
+import json
 # Backward compatibility
 from errbot.version import VERSION
 from errbot.utils import version2array
@@ -36,7 +36,7 @@ class DictBot(BotPlugin):
     def get_estimated_count(self, query):
         request = Request(GOOGLE_WEB_URL % quote(query), None, {'Referer': 'http://www.gootz.net/'})
         response = urlopen(request)
-        results = simplejson.load(response)
+        results = json.load(response)
         return int(results['responseData']['cursor']['estimatedResultCount'])
 
     @botcmd
