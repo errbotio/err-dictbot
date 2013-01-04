@@ -1,20 +1,17 @@
-from urllib2 import urlopen, quote
-# Backward compatibility
 import json
-from errbot.version import VERSION
-from errbot.utils import version2array
-if version2array(VERSION) >= [1,6,0]:
-    from errbot import botcmd, BotPlugin
+from errbot import botcmd, BotPlugin, PY2
+
+if PY2:
+    from urllib2 import urlopen, quote
 else:
-    from errbot.botplugin import BotPlugin
-    from errbot.jabberbot import botcmd
+    from urllib.request import urlopen, quote
 
 
 class BeerBot(BotPlugin):
-    min_err_version = '1.3.0' # it needs the configuration feature
+    min_err_version = '1.6.0'
 
     def get_configuration_template(self):
-        return {'BREWERY_DB_TOKEN' : '00112233445566778899aabbccddeeff'}
+        return {'BREWERY_DB_TOKEN': '00112233445566778899aabbccddeeff'}
 
     def configure(self, configuration):
         if configuration:
@@ -45,7 +42,7 @@ class BeerBot(BotPlugin):
         if token is None:
             return 'Invalid configuration'
 
-        content = urlopen(self.BREWERY_DB_URL_SEARCH%token + '&q=' + quote(args.strip()) + '&type=beer' )
+        content = urlopen(self.BREWERY_DB_URL_SEARCH % token + '&q=' + quote(args.strip()) + '&type=beer')
         results = json.load(content)
         for beer_data in results.get('data', []):
             name = beer_data.get('name', None)
@@ -63,7 +60,7 @@ class BeerBot(BotPlugin):
             if name:
                 shortdesc = name + '\n' + description
                 self.send(mess.getFrom(), shortdesc, message_type=mess.getType())
-            #if style_name:
-            #    styledesc = style_name + '\n' + '-' * len(style_name) + '\n' + style_description
-            #    self.send(mess.getFrom(), styledesc, message_type=mess.getType())
+                #if style_name:
+                #    styledesc = style_name + '\n' + '-' * len(style_name) + '\n' + style_description
+                #    self.send(mess.getFrom(), styledesc, message_type=mess.getType())
         return '/me is looking for your beer'

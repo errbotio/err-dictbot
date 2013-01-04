@@ -16,9 +16,11 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import socket, re
+import socket
+import re
 
 version = '1.0'
+
 
 def dequote(str):
     """Will remove single or double quotes from the start and end of a string
@@ -30,11 +32,13 @@ def dequote(str):
         str = str[0:-1]
     return str
 
+
 def enquote(str):
     """This function will put a string in double quotes, properly
     escaping any existing double quotes with a backslash.  It will
     return the result."""
     return '"' + str.replace('"', "\\\"") + '"'
+
 
 class Connection:
     """This class is used to establish a connection to a database server.
@@ -42,11 +46,12 @@ class Connection:
     Instantiating it takes two optional arguments: a hostname (a string)
     and a port (an int).  The hostname defaults to localhost
     and the port to 2628, the port specified in RFC."""
-    def __init__(self, hostname = 'localhost', port = 2628):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def __init__(self, hostname='localhost', port=2628):
+        self.sock = socket.socket()
         self.sock.connect((hostname, port))
-        self.rfile = self.sock.makefile("rt")
-        self.wfile = self.sock.makefile("wt", 0)
+        self.rfile = self.sock.makefile()
+        self.wfile = self.sock.makefile("wb", 0)
         self.saveconnectioninfo()
 
     def getresultcode(self):
@@ -63,8 +68,7 @@ class Connection:
 
         code, text = self.getresultcode()
         if code < 200 or code >= 300:
-            raise Exception, "Got '%s' when 200-class response expected" % \
-                  line
+            raise Exception("Got '%s' when 200-class response expected" % code)
         return [code, text]
 
     def get100block(self):
@@ -84,8 +88,7 @@ class Connection:
         finalcode]"""
         code, text = self.getresultcode()
         if code < 100 or code >= 200:
-            raise Exception, "Got '%s' when 100-class response expected" % \
-                  code
+            raise Exception("Got '%s' when 100-class response expected" % code)
 
         bodylines = self.get100block().split("\n")
 
@@ -109,7 +112,7 @@ class Connection:
         capstr, msgid = re.search('<(.*)> (<.*>)$', string).groups()
         self.capabilities = capstr.split('.')
         self.messageid = msgid
-        
+
     def getcapabilities(self):
         """Returns a list of the capabilities advertised by the server."""
         return self.capabilities
@@ -124,7 +127,7 @@ class Connection:
         network traffic!"""
         if hasattr(self, 'dbdescs'):
             return self.dbdescs
-        
+
         self.sendcommand("SHOW DB")
         self.dbdescs = self.get100dict()
         return self.dbdescs
@@ -147,15 +150,15 @@ class Connection:
         if not hasattr(self, 'dbobjs'):
             self.dbobjs = {}
 
-        if self.dbobjs.has_key(dbname):
+        if dbname in self.dbobjs:
             return self.dbobjs[dbname]
 
         # We use self.dbdescs explicitly since we don't want to
         # generate net traffic with this request!
 
-        if dbname != '*' and dbname != '!' and \
-               not dbname in self.dbdescs.keys():
-            raise Exception, "Invalid database name '%s'" % dbname
+        if dbname != '*' and dbname != '!' and\
+           not dbname in self.dbdescs.keys():
+            raise Exception("Invalid database name '%s'" % dbname)
 
         self.dbobjs[dbname] = Database(self, dbname)
         return self.dbobjs[dbname]
@@ -163,7 +166,7 @@ class Connection:
     def sendcommand(self, command):
         """Takes a command, without a newline character, and sends it to
         the server."""
-        self.wfile.write(command + "\n")
+        self.wfile.write(command.encode() + b"\n")
 
     def define(self, database, word):
         """Returns a list of Definition objects for each matching
@@ -177,10 +180,10 @@ class Connection:
         has a match."""
         self.getdbdescs()               # Prime the cache
 
-        if database != '*' and database != '!' and \
+        if database != '*' and database != '!' and\
            not database in self.getdbdescs():
-            raise Exception, "Invalid database '%s' specified" % database
-        
+            raise Exception("Invalid database '%s' specified" % database)
+
         self.sendcommand("DEFINE " + enquote(database) + " " + enquote(word))
         code = self.getresultcode()[0]
 
@@ -190,7 +193,7 @@ class Connection:
             # No definitions.
             return []
         if code != 150:
-            raise Exception, "Unknown code %d" % code
+            raise Exception("Unknown code %d" % code)
 
         while 1:
             code, text = self.getresultcode()
@@ -215,10 +218,10 @@ class Connection:
         self.getstratdescs()            # Prime the cache
         self.getdbdescs()               # Prime the cache
         if not strategy in self.getstratdescs().keys():
-            raise Exception, "Invalid strategy '%s'" % strategy
-        if database != '*' and database != '!' and \
-               not database in self.getdbdescs().keys():
-            raise Exception, "Invalid database name '%s'" % database
+            raise Exception("Invalid strategy '%s'" % strategy)
+        if database != '*' and database != '!' and\
+           not database in self.getdbdescs().keys():
+            raise Exception("Invalid database name '%s'" % database)
 
         self.sendcommand("MATCH %s %s %s" % (enquote(database),
                                              enquote(strategy),
@@ -228,7 +231,7 @@ class Connection:
             # No Matches
             return []
         if code != 152:
-            raise Exception, "Unexpected code %d" % code
+            raise Exception("Unexpected code %d" % code)
 
         retval = []
 
@@ -237,21 +240,23 @@ class Connection:
             retval.append(Definition(self, self.getdbobj(matchdict),
                                      dequote(matchword)))
         if self.getresultcode()[0] != 250:
-            raise Exception, "Unexpected end-of-list code %d" % code
+            raise Exception("Unexpected end-of-list code %d" % code)
         return retval
+
 
 class Database:
     """An object corresponding to a particular database in a server."""
+
     def __init__(self, dictconn, dbname):
         """Initialize the object -- requires a Connection object and
         a database name."""
         self.conn = dictconn
         self.name = dbname
-    
+
     def getname(self):
         """Returns the short name for this database."""
         return self.name
-    
+
     def getdescription(self):
         if hasattr(self, 'description'):
             return self.description
@@ -262,7 +267,7 @@ class Database:
         else:
             self.description = self.conn.getdbdescs()[self.getname()]
         return self.description
-    
+
     def getinfo(self):
         """Returns a string of info describing this database."""
         if hasattr(self, 'info'):
@@ -289,9 +294,11 @@ class Database:
         the same as from Connection.define()."""
         return self.conn.match(self.getname(), strategy, word)
 
+
 class Definition:
     """An object corresponding to a single definition."""
-    def __init__(self, dictconn, db, word, defstr = None):
+
+    def __init__(self, dictconn, db, word, defstr=None):
         """Instantiate the object.  Requires: a Connection object,
         a Database object (NOT corresponding to '*' or '!' databases),
         a word.  Optional: a definition string.  If not supplied,
