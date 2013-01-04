@@ -33,7 +33,7 @@ class DictBot(BotPlugin):
     def get_estimated_count(self, query):
         request = Request(GOOGLE_WEB_URL % quote(query), None, {'Referer': 'http://www.gootz.net/'})
         response = urlopen(request)
-        results = json.loads(response.read().decode())
+        results = json.loads(response.read().decode('utf-8'))
         return int(results['responseData']['cursor']['estimatedResultCount'])
 
     @botcmd
